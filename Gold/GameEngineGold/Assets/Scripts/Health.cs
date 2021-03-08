@@ -28,7 +28,7 @@ public class Health : MonoBehaviour
 
     private void Update()
     {
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("BlueKnight_Hit_front") && !animator.GetCurrentAnimatorStateInfo(0).IsName("BlueKnight_Hit_back"))
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Hit_front") && !animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Hit_back"))
         {
             isHit = false;
         }

@@ -29,7 +29,7 @@ public class NPC_Attack : MonoBehaviour
 
     void Update()
     {   
-        if(!animator.GetCurrentAnimatorStateInfo(0).IsName("BlueKnight_Attack"))
+        if(!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Attack"))
         {
             isAttacking = false;
         }
