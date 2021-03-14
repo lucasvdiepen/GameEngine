@@ -11,9 +11,9 @@ public class Player_Attack : MonoBehaviour
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
+        /*if(Input.GetKeyDown(KeyCode.Space))
         {
             FindObjectOfType<Health>().TakeDamage(50);
-        }
+        }*/
     }
 }
