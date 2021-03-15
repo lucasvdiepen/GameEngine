@@ -105,7 +105,7 @@ public class Health : MonoBehaviour
         Player_Attack playerAttack = GetComponent<Player_Attack>();
         if (playerAttack != null) playerAttack.enabled = false;
 
-        GetComponent<BoxCollider2D>().enabled = false;
+        GetComponent<Collider2D>().enabled = false;
 
         animator.SetBool("IsDead", true);
 
