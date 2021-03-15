@@ -9,6 +9,9 @@ public class Player_Movement : MonoBehaviour
 
     private Rigidbody2D rb;
     private Animator animator;
+    private Player_Attack playerAttack;
+    private Health health;
+    public ParticleSystem dust;
 
     private bool isGrounded = false;
 
@@ -16,30 +19,35 @@ public class Player_Movement : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
+        playerAttack = GetComponent<Player_Attack>();
+        health = GetComponent<Health>();
     }
 
     void Update()
     {
-        animator.SetFloat("Velocity", 1 * Mathf.Sign(rb.velocity.y));
-
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(!playerAttack.isAttacking || !health.isHit)
         {
-            Jump();
+            animator.SetFloat("Velocity", 1 * Mathf.Sign(rb.velocity.y));
+
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                Jump();
+            }
+
+            int moveDirection = 0;
+
+            if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) moveDirection -= 1;
+            if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) moveDirection += 1;
+
+            Move(moveDirection, speed);
         }
-
-        int moveDirection = 0;
-
-        if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) moveDirection -= 1;
-        if (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow)) moveDirection += 1;
-
-        Move(moveDirection, speed);
     }
 
     private void Move(int moveDirection, float speed)
     {
-        if (moveDirection == -1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 0, 0); }
-        else if (moveDirection == 1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 180, 0); }
-        else if (moveDirection == 0) animator.SetBool("IsRunning", false);
+        if (moveDirection == -1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 0, 0); PlayDust(); }
+        else if (moveDirection == 1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 180, 0); PlayDust(); }
+        else if (moveDirection == 0) { animator.SetBool("IsRunning", false); StopDust(); }
 
         transform.Translate(moveDirection * speed * Time.deltaTime, 0, 0, Space.World);
 
@@ -65,4 +73,24 @@ public class Player_Movement : MonoBehaviour
             animator.SetBool("isGrounded", true);
         }
     }
+
+    private void PlayDust()
+    {
+        if(isGrounded)
+        {
+            if (!dust.isPlaying)
+            {
+                dust.Play();
+            }
+        }
+        else
+        {
+            if (dust.isPlaying) StopDust();
+        }
+    }
+
+    private void StopDust()
+    {
+        dust.Stop();
+    }    
 }

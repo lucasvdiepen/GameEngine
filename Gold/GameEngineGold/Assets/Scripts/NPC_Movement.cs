@@ -18,6 +18,8 @@ public class NPC_Movement : MonoBehaviour
     public float angryDistance = 5f;
     public float notAngryDistance = 7f;
 
+    public float notAngryHeight = 1.5f;
+
     public float minWalkTime = 1f;
     public float maxWalkTime = 3f;
     private float walkTime = 0f;
@@ -80,18 +82,22 @@ public class NPC_Movement : MonoBehaviour
             //Npc is running
             if (isRunning)
             {
-                //Check if npc is still in angry range
-                if (Vector2.Distance(transform.position, target.position) <= notAngryDistance)
-                {
-                    if (transform.position.x > target.position.x) lookingDirection = -1;
-
-                    if (transform.position.x < target.position.x) lookingDirection = 1;
-
-                    Move(runSpeed);
-                }
+                if (target.position.y >= notAngryHeight) StopRunning();
                 else
                 {
-                    StopRunning();
+                    //Check if npc is still in angry range
+                    if (Vector2.Distance(transform.position, target.position) <= notAngryDistance)
+                    {
+                        if (transform.position.x > target.position.x) lookingDirection = -1;
+
+                        if (transform.position.x < target.position.x) lookingDirection = 1;
+
+                        Move(runSpeed);
+                    }
+                    else
+                    {
+                        StopRunning();
+                    }
                 }
             }
         }
