@@ -21,6 +21,11 @@ public class NPC_Attack : MonoBehaviour
 
     public bool isAttacking = false;
 
+    public int minDamage = 10;
+    public int maxDamage = 30;
+
+    public bool targetIsDead = false;
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -29,7 +34,7 @@ public class NPC_Attack : MonoBehaviour
 
     void Update()
     {   
-        if(!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Attack"))
+        if(!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Attack") && isAttacking)
         {
             isAttacking = false;
         }
@@ -42,12 +47,12 @@ public class NPC_Attack : MonoBehaviour
             {
                 if (Random.Range(0, 101) < attackChance)
                 {
-                    Debug.Log("Attack");
+                    Debug.Log("NPC attack hit");
                     Attack(hits);
                 }
                 else
                 {
-                    Debug.Log("Attack missed");
+                    Debug.Log("NPC attack missed");
                 }
 
                 lastAttack = Time.time;
@@ -60,9 +65,13 @@ public class NPC_Attack : MonoBehaviour
         isAttacking = true;
         animator.SetTrigger("Attack");
 
+        npcMovement.StopDust();
+
         foreach(Collider2D enemy in hits)
         {
-            enemy.GetComponent<Health>().TakeDamage(50);
+            int rndDamage = Random.Range(minDamage, maxDamage + 1);
+            targetIsDead = enemy.GetComponent<Health>().TakeDamage(rndDamage);
+            if (targetIsDead) npcMovement.StopMoving();
         }
     }
 

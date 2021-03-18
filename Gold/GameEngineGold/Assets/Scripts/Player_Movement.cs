@@ -7,6 +7,8 @@ public class Player_Movement : MonoBehaviour
     public float speed = 2f;
     public float jumpForce = 10f;
 
+    public float JumpDustTime = 0.5f;
+
     private Rigidbody2D rb;
     private Animator animator;
     private Player_Attack playerAttack;
@@ -14,6 +16,9 @@ public class Player_Movement : MonoBehaviour
     public ParticleSystem dust;
 
     private bool isGrounded = false;
+    private bool jumpEffect = false;
+
+    public int lookingDirection = -1;
 
     void Start()
     {
@@ -25,10 +30,10 @@ public class Player_Movement : MonoBehaviour
 
     void Update()
     {
-        if(!playerAttack.isAttacking || !health.isHit)
-        {
-            animator.SetFloat("Velocity", 1 * Mathf.Sign(rb.velocity.y));
+        animator.SetFloat("Velocity", 1 * Mathf.Sign(rb.velocity.y));
 
+        if (!playerAttack.isAttacking && !health.isHit)
+        {
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Jump();
@@ -45,12 +50,11 @@ public class Player_Movement : MonoBehaviour
 
     private void Move(int moveDirection, float speed)
     {
-        if (moveDirection == -1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 0, 0); PlayDust(); }
-        else if (moveDirection == 1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 180, 0); PlayDust(); }
+        if (moveDirection == -1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 0, 0); PlayDust(); lookingDirection = moveDirection; }
+        else if (moveDirection == 1) { animator.SetBool("IsRunning", true); transform.rotation = Quaternion.Euler(0, 180, 0); PlayDust(); lookingDirection = moveDirection; }
         else if (moveDirection == 0) { animator.SetBool("IsRunning", false); StopDust(); }
 
         transform.Translate(moveDirection * speed * Time.deltaTime, 0, 0, Space.World);
-
     }
 
     private void Jump()
@@ -62,6 +66,9 @@ public class Player_Movement : MonoBehaviour
 
             animator.SetBool("isGrounded", false);
             animator.SetTrigger("Jump");
+
+            jumpEffect = true;
+            StartCoroutine(PlayDustEffectFor(JumpDustTime));
         }
     }
 
@@ -74,23 +81,40 @@ public class Player_Movement : MonoBehaviour
         }
     }
 
+    private IEnumerator PlayDustEffectFor(float seconds)
+    {
+        dust.Play();
+
+        yield return new WaitForSeconds(seconds);
+
+        dust.Stop();
+
+        jumpEffect = false;
+    }
+
     private void PlayDust()
     {
-        if(isGrounded)
+        if(!jumpEffect)
         {
-            if (!dust.isPlaying)
+            if (isGrounded)
             {
-                dust.Play();
+                if (!dust.isPlaying)
+                {
+                    dust.Play();
+                }
             }
-        }
-        else
-        {
-            if (dust.isPlaying) StopDust();
+            else
+            {
+                if (dust.isPlaying) StopDust();
+            }
         }
     }
 
-    private void StopDust()
+    public void StopDust()
     {
-        dust.Stop();
+        if(!jumpEffect)
+        {
+            dust.Stop();
+        }
     }    
 }

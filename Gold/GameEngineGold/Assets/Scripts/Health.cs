@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
@@ -8,11 +9,24 @@ public class Health : MonoBehaviour
 
     public Transform target;
 
+    public Slider healthBar;
+
     private Animator animator;
 
     private bool isDead = false;
 
     public bool isHit = false;
+
+    public float hitDelay = 0.5f;
+
+    public Player_Movement playerMovement;
+    public Player_Attack playerAttack;
+    public NPC_Movement npcMovement;
+    public NPC_Attack npcAttack;
+
+    public GameObject dust;
+
+    private Rigidbody2D rb;
 
     private enum FallDirection
     {
@@ -24,30 +38,39 @@ public class Health : MonoBehaviour
     private void Start()
     {
         animator = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
     }
 
-    private void Update()
+    private IEnumerator StopHitAnimation()
     {
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Hit_front") && !animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Hit_back"))
+        if(isHit)
         {
+            yield return new WaitForSeconds(hitDelay);
+
             isHit = false;
+            animator.SetBool("IsHit", false);
+            if (npcMovement != null) npcMovement.Run();
         }
     }
 
-    public void TakeDamage(int damage)
+    public bool TakeDamage(int damage)
     {
         if(!isDead && !isHit)
         {
             health -= damage;
 
-            isHit = true;
-
-            //Update health bar here
+            animator.SetBool("IsHit", true);
 
             if (health <= 0)
             {
                 //Dead
+                healthBar.value = 0;
                 Die();
+            }
+            else
+            {
+                //Update health bar here
+                healthBar.value = health;
             }
 
             //hit animations here
@@ -55,24 +78,28 @@ public class Health : MonoBehaviour
 
             if (fallDirection == FallDirection.Front) animator.SetTrigger("HitFront");
             else if (fallDirection == FallDirection.Back) animator.SetTrigger("HitBack");
+
+            isHit = true;
+            
+            StartCoroutine(StopHitAnimation());
         }
+
+        return isDead;
     }
 
     private FallDirection GetFallingDirection()
     {
         int lookingDirection = 0;
 
-        NPC_Movement npcMovement = GetComponent<NPC_Movement>();
         if(npcMovement != null)
         {
             lookingDirection = npcMovement.lookingDirection;
         }
         else
         {
-            Player_Movement playerMovement = GetComponent<Player_Movement>();
             if(playerMovement != null)
             {
-                //lookingDirection = playerMovement.lookingDirection;
+                lookingDirection = playerMovement.lookingDirection;
             }
         }
 
@@ -93,24 +120,19 @@ public class Health : MonoBehaviour
 
     public void Die()
     {
-        NPC_Movement npcMovement = GetComponent<NPC_Movement>();
+        rb.gravityScale = 0;
+
         if (npcMovement != null) npcMovement.enabled = false;
-
-        NPC_Attack npcAttack = GetComponent<NPC_Attack>();
         if (npcAttack != null) npcAttack.enabled = false;
-
-        Player_Movement playerMovement = GetComponent<Player_Movement>();
         if (playerMovement != null) playerMovement.enabled = false;
-
-        Player_Attack playerAttack = GetComponent<Player_Attack>();
         if (playerAttack != null) playerAttack.enabled = false;
+
+        dust.SetActive(false);
 
         GetComponent<Collider2D>().enabled = false;
 
         animator.SetBool("IsDead", true);
 
         isDead = true;
-
-        //this.enabled = false;
     }
 }

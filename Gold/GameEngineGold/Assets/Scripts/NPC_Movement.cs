@@ -5,24 +5,30 @@ using UnityEngine;
 public class NPC_Movement : MonoBehaviour
 {
     public Transform target;
+    public ParticleSystem dust;
 
+    [Header("Speed")]
     public float walkSpeed = 1f;
     public float runSpeed = 2f;
 
+    [Header("Walk")]
     public float minWalkDelay = 4f;
     public float maxWalkDelay = 10f;
     private float walkDelay = 0f;
 
     public int walkChance = 50;
 
+    public float minWalkTime = 1f;
+    public float maxWalkTime = 3f;
+    private float walkTime = 0f;
+
+    public float walkCenterDistance = 6f;
+
+    [Header("Angry")]
     public float angryDistance = 5f;
     public float notAngryDistance = 7f;
 
     public float notAngryHeight = 1.5f;
-
-    public float minWalkTime = 1f;
-    public float maxWalkTime = 3f;
-    private float walkTime = 0f;
 
     private Animator animator;
 
@@ -31,7 +37,8 @@ public class NPC_Movement : MonoBehaviour
     private bool isWalking = false;
     private bool isRunning = false;
 
-    public int lookingDirection = -1;
+
+    [HideInInspector] public int lookingDirection = -1;
 
     private NPC_Attack npcAttack;
     private Health health;
@@ -47,56 +54,59 @@ public class NPC_Movement : MonoBehaviour
 
     void Update()
     {
-        //Check if npc should be angry
-        if (Vector2.Distance(transform.position, target.position) <= angryDistance && !isRunning)
+        if(!npcAttack.targetIsDead)
         {
-            //Check if npc is looking at target
-            if ((transform.position.x > target.position.x && lookingDirection == -1) || (transform.position.x < target.position.x && lookingDirection == 1))
+            //Check if npc should be angry
+            if (Vector2.Distance(transform.position, target.position) <= angryDistance && !isRunning)
             {
-                Run();
-            }
-        }
-
-        //Check if npc should be walking
-        float time = Time.time;
-
-        if (time >= (lastWalk + walkDelay) && !isWalking && !isRunning)
-        {
-            Walk();
-        }
-
-        //Check if npc should stop walking
-        if(time >= (lastWalk + walkDelay + walkTime) && isWalking && !isRunning)
-        {
-            StopWalking();
-        }
-
-        if(!npcAttack.isAttacking && !health.isHit)
-        {
-            //Npc is walking
-            if (isWalking)
-            {
-                Move(walkSpeed);
-            }
-
-            //Npc is running
-            if (isRunning)
-            {
-                if (target.position.y >= notAngryHeight) StopRunning();
-                else
+                //Check if npc is looking at target
+                if ((transform.position.x > target.position.x && lookingDirection == -1) || (transform.position.x < target.position.x && lookingDirection == 1))
                 {
-                    //Check if npc is still in angry range
-                    if (Vector2.Distance(transform.position, target.position) <= notAngryDistance)
-                    {
-                        if (transform.position.x > target.position.x) lookingDirection = -1;
+                    Run();
+                }
+            }
 
-                        if (transform.position.x < target.position.x) lookingDirection = 1;
+            //Check if npc should be walking
+            float time = Time.time;
 
-                        Move(runSpeed);
-                    }
+            if (time >= (lastWalk + walkDelay) && !isWalking && !isRunning)
+            {
+                Walk();
+            }
+
+            //Check if npc should stop walking
+            if (time >= (lastWalk + walkDelay + walkTime) && isWalking && !isRunning)
+            {
+                StopWalking();
+            }
+
+            if (!npcAttack.isAttacking && !health.isHit)
+            {
+                //Npc is walking
+                if (isWalking)
+                {
+                    Move(walkSpeed);
+                }
+
+                //Npc is running
+                if (isRunning)
+                {
+                    if (target.position.y >= notAngryHeight) StopRunning();
                     else
                     {
-                        StopRunning();
+                        //Check if npc is still in angry range
+                        if (Vector2.Distance(transform.position, target.position) <= notAngryDistance)
+                        {
+                            if (transform.position.x > target.position.x) lookingDirection = -1;
+
+                            if (transform.position.x < target.position.x) lookingDirection = 1;
+
+                            Move(runSpeed);
+                        }
+                        else
+                        {
+                            StopRunning();
+                        }
                     }
                 }
             }
@@ -117,9 +127,21 @@ public class NPC_Movement : MonoBehaviour
 
         if(rndNumber <= walkChance)
         {
-            //Pick random walk direction
-            int walkDirection = Random.Range(0, 2);
-            if (walkDirection == 0) walkDirection = -1;
+            int walkDirection = 0;
+
+            //Check if should walk to center
+            if(Vector2.Distance(new Vector2(Camera.main.transform.position.x, 0), new Vector2(transform.position.x, 0)) > walkCenterDistance)
+            {
+                if (transform.position.x < Camera.main.transform.position.x) walkDirection = 1;
+
+                if (transform.position.x > Camera.main.transform.position.x) walkDirection = -1;
+            }
+            else
+            {
+                //Pick random walk direction
+                walkDirection = Random.Range(0, 2);
+                if (walkDirection == 0) walkDirection = -1;
+            }
 
             lookingDirection = walkDirection;
 
@@ -128,6 +150,12 @@ public class NPC_Movement : MonoBehaviour
             animator.SetBool("IsWalking", true);
             isWalking = true;
         }
+    }
+
+    public void StopMoving()
+    {
+        StopRunning();
+        StopWalking();
     }
 
     private void StopWalking()
@@ -142,13 +170,15 @@ public class NPC_Movement : MonoBehaviour
     {
         isRunning = false;
         animator.SetBool("IsRunning", false);
+        StopDust();
     }
 
-    private void Run()
+    public void Run()
     {
         StopWalking();
         animator.SetBool("IsRunning", true);
         isRunning = true;
+        PlayDust();
     }
 
     private void SetRandomWalkDelay()
@@ -159,5 +189,21 @@ public class NPC_Movement : MonoBehaviour
     private void SetRandomWalkTime()
     {
         walkTime = Random.Range(minWalkTime, maxWalkTime);
+    }
+
+    private void PlayDust()
+    {
+        if (!dust.isPlaying)
+        {
+            dust.Play();
+        }
+    }
+
+    public void StopDust()
+    {
+        if(dust.isPlaying)
+        {
+            dust.Stop();
+        }
     }
 }

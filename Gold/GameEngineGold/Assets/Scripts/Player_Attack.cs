@@ -5,6 +5,7 @@ using UnityEngine;
 public class Player_Attack : MonoBehaviour
 {
     private Animator animator;
+    private Player_Movement playerMovement;
 
     public Transform attackPoint;
     public LayerMask enemyLayer;
@@ -17,14 +18,18 @@ public class Player_Attack : MonoBehaviour
 
     public bool isAttacking = false;
 
+    public int minDamage = 10;
+    public int maxDamage = 30;
+
     void Start()
     {
         animator = GetComponent<Animator>();
+        playerMovement = GetComponent<Player_Movement>();
     }
 
     void Update()
     {
-        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Attack"))
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Knight_Attack") && isAttacking)
         {
             isAttacking = false;
         }
@@ -42,14 +47,17 @@ public class Player_Attack : MonoBehaviour
 
     private void Attack()
     {
-        isAttacking = true;
         animator.SetTrigger("Attack");
+        isAttacking = true;
+
+        playerMovement.StopDust();
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayer);
 
         foreach (Collider2D enemy in hits)
         {
-            enemy.GetComponent<Health>().TakeDamage(50);
+            int rndDamage = Random.Range(minDamage, maxDamage + 1);
+            enemy.GetComponent<Health>().TakeDamage(rndDamage);
         }
     }
 
