@@ -8,18 +8,17 @@ public class Player_Attack : MonoBehaviour
     private Player_Movement playerMovement;
 
     public Transform attackPoint;
+
+    [Header("Attack")]
     public LayerMask enemyLayer;
 
     public float attackRange = 1f;
-
     public float attackDelay = 2f;
-
-    private float lastAttack = 0f;
-
-    public bool isAttacking = false;
-
     public int minDamage = 10;
     public int maxDamage = 30;
+
+    private float lastAttack = 0f;
+    [HideInInspector] public bool isAttacking = false;
 
     void Start()
     {
@@ -34,6 +33,7 @@ public class Player_Attack : MonoBehaviour
             isAttacking = false;
         }
 
+        //Get player input
         if(Input.GetKeyDown(KeyCode.F) || Input.GetMouseButtonDown(0))
         {
             float time = Time.time;

@@ -5,28 +5,27 @@ using UnityEngine.UI;
 
 public class Health : MonoBehaviour
 {
-    public int health = 100;
-
     public Transform target;
-
     public Slider healthBar;
-
     private Animator animator;
-
-    private bool isDead = false;
-
-    public bool isHit = false;
-
-    public float hitDelay = 0.5f;
-
+    
     public Player_Movement playerMovement;
     public Player_Attack playerAttack;
     public NPC_Movement npcMovement;
     public NPC_Attack npcAttack;
-
     public GameObject dust;
 
+    [Space(10)]
+
+    public int health = 100;
+
+    public float hitDelay = 0.5f;
+
+    [HideInInspector] public bool isHit = false;
+
     private Rigidbody2D rb;
+
+    private bool isDead = false;
 
     private enum FallDirection
     {

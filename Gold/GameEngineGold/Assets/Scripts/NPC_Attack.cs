@@ -8,23 +8,23 @@ public class NPC_Attack : MonoBehaviour
     private NPC_Movement npcMovement;
 
     public Transform attackPoint;
+
+    [Header("Attack")]
     public LayerMask enemyLayer;
 
     public float attackRange = 1f;
-    public float attackDistance = 0.5f;
 
+    [Range(0, 100)]
     public int attackChance = 75;
 
     public float attackDelay = 2f;
 
-    private float lastAttack = 0f;
-
-    public bool isAttacking = false;
-
     public int minDamage = 10;
     public int maxDamage = 30;
 
-    public bool targetIsDead = false;
+    private float lastAttack = 0f;
+    [HideInInspector] public bool targetIsDead = false;
+    [HideInInspector] public bool isAttacking = false;
 
     void Start()
     {
@@ -39,8 +39,8 @@ public class NPC_Attack : MonoBehaviour
             isAttacking = false;
         }
 
+        //Check if player is in hit range
         Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange, enemyLayer);
-
         if (hits.Length > 0 && !isAttacking)
         {
             if(Time.time > (lastAttack + attackDelay))

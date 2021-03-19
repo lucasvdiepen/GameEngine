@@ -16,6 +16,7 @@ public class NPC_Movement : MonoBehaviour
     public float maxWalkDelay = 10f;
     private float walkDelay = 0f;
 
+    [Range(0, 100)]
     public int walkChance = 50;
 
     public float minWalkTime = 1f;
@@ -36,7 +37,6 @@ public class NPC_Movement : MonoBehaviour
 
     private bool isWalking = false;
     private bool isRunning = false;
-
 
     [HideInInspector] public int lookingDirection = -1;
 

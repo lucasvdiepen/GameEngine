@@ -4,11 +4,6 @@ using UnityEngine;
 
 public class Player_Movement : MonoBehaviour
 {
-    public float speed = 2f;
-    public float jumpForce = 10f;
-
-    public float JumpDustTime = 0.5f;
-
     private Rigidbody2D rb;
     private Animator animator;
     private Player_Attack playerAttack;
@@ -18,7 +13,14 @@ public class Player_Movement : MonoBehaviour
     private bool isGrounded = false;
     private bool jumpEffect = false;
 
-    public int lookingDirection = -1;
+    [HideInInspector] public int lookingDirection = -1;
+
+    [Header("Speed")]
+    public float speed = 2f;
+
+    [Header("Jump")]
+    public float jumpForce = 10f;
+    public float JumpDustTime = 0.5f;
 
     void Start()
     {
@@ -34,6 +36,7 @@ public class Player_Movement : MonoBehaviour
 
         if (!playerAttack.isAttacking && !health.isHit)
         {
+            //Get player input
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 Jump();
